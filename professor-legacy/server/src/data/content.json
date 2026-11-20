@@ -1,0 +1,73 @@
+{
+  "profile": {
+    "name": "Professor Name",
+    "title": "Professor & Academic Mentor",
+    "university": "Your University / Department",
+    "tagline": "inspiring generations through knowledge, curiosity, and compassion.",
+    "bio": "An inspiring educator whose dedication to teaching, mentorship, and academic excellence has shaped countless student journeys. This portfolio is a demonstration: replace this text with a verified biography and accomplishments.",
+    "email": "professor@example.com",
+    "years": "Teaching \u2022 Mentorship \u2022 Impact"
+  },
+  "journey": [
+    {
+      "id": "j1",
+      "year": "20XX",
+      "title": "The academic foundation",
+      "description": "Add verified education details, institutions, and early milestones."
+    },
+    {
+      "id": "j2",
+      "year": "20XX",
+      "title": "A career in teaching",
+      "description": "Describe the professor\u2019s first teaching role and academic interests."
+    },
+    {
+      "id": "j3",
+      "year": "Today",
+      "title": "Inspiring future generations",
+      "description": "Celebrate ongoing mentorship, research, and student success."
+    }
+  ],
+  "research": [
+    {
+      "id": "r1",
+      "title": "Research Area One",
+      "description": "Placeholder for a verified research focus, project, or publication."
+    },
+    {
+      "id": "r2",
+      "title": "Research Area Two",
+      "description": "Add a real abstract or description and publication URL."
+    },
+    {
+      "id": "r3",
+      "title": "Research Area Three",
+      "description": "Share an ongoing area of academic inquiry."
+    }
+  ],
+  "achievements": [
+    {
+      "id": "a1",
+      "title": "Academic Recognition",
+      "description": "Replace with a verified award or distinction."
+    },
+    {
+      "id": "a2",
+      "title": "Mentorship Milestone",
+      "description": "Describe a meaningful contribution to student learning."
+    },
+    {
+      "id": "a3",
+      "title": "Institutional Contribution",
+      "description": "Highlight an important academic initiative or role."
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "t1",
+      "name": "Sample Student",
+      "message": "This is a demonstration testimonial. Replace it with an approved, authentic student message.",
+      "approved": true
+    }
+  ]
+}

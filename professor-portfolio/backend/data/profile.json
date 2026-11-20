@@ -1,0 +1,36 @@
+{
+  "name": "Professor Lalit Kumar Vashishtha",
+  "title": "Assistant Professor of Computer Science at KIIT · PhD candidate at BITS Pilani · Hardware security on RISC-V and formal methods",
+  "tagline": "Architecting resilient distributed backends & mentoring the next wave of engineers.",
+  "bio": "Dedicated mentor and computer science professor specializing in hardware security on RISC-V, distributed systems, and modern backend architectures.",
+  "skills": {
+    "frontend": [
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "Next.js",
+      "WebGL & Three.js",
+      "Vite"
+    ],
+    "backend": [
+      "FastAPI & Python",
+      "Node.js & Express",
+      "SQLAlchemy & SQLite",
+      "PostgreSQL",
+      "Distributed Systems",
+      "REST & GraphQL APIs"
+    ]
+  },
+  "links": {
+    "github": "https://github.com/adityasystems99/psystems",
+    "linkedin": "https://linkedin.com",
+    "email": "{{PROFESSOR_EMAIL}}@university.edu",
+    "website": "https://{{PROFESSOR_WEBSITE}}.edu"
+  },
+  "education": [
+    "Professor of Computer Science & Engineering",
+    "Head of Distributed Systems Research Lab",
+    "Distinguished Faculty Mentor & Educator"
+  ]
+}
+

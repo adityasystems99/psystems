@@ -1,0 +1,62 @@
+[
+  {
+    "id": "distributed-task-orchestrator",
+    "title": "{{PROJECT_1_TITLE}} Distributed Task Orchestrator",
+    "summary": "High-throughput asynchronous task queue engine built with FastAPI and distributed worker nodes for fault-tolerant data pipelines.",
+    "stack": [
+      "FastAPI",
+      "Python",
+      "Redis",
+      "SQLAlchemy",
+      "Docker"
+    ],
+    "liveUrl": "https://demo.example.com/orchestrator",
+    "repoUrl": "https://github.com/adityasystems99/psystems",
+    "image": "/images/project-1.png"
+  },
+  {
+    "id": "realtime-collaborative-ide",
+    "title": "{{PROJECT_2_TITLE}} Realtime Collaborative Cloud IDE",
+    "summary": "Browser-based distributed code workspace supporting concurrent editing with CRDTs, containerized sandbox execution, and WebSocket synchronization.",
+    "stack": [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "WebSockets",
+      "Docker"
+    ],
+    "liveUrl": "https://demo.example.com/cloud-ide",
+    "repoUrl": "https://github.com/adityasystems99/psystems",
+    "image": "/images/project-2.png"
+  },
+  {
+    "id": "microservices-api-gateway",
+    "title": "{{PROJECT_3_TITLE}} High-Performance API Gateway & Sentinel",
+    "summary": "Zero-trust reverse proxy and telemetry gateway with dynamic token validation, sliding-window rate limiting, and distributed tracing.",
+    "stack": [
+      "Go",
+      "FastAPI",
+      "SQLite",
+      "OpenTelemetry",
+      "Tailwind CSS"
+    ],
+    "liveUrl": "https://demo.example.com/gateway",
+    "repoUrl": "https://github.com/adityasystems99/psystems",
+    "image": "/images/project-3.png"
+  },
+  {
+    "id": "academic-peer-evaluator",
+    "title": "{{PROJECT_4_TITLE}} Academic Research & Peer-Review Hub",
+    "summary": "Decentralized archival platform for university researchers, indexing whitepapers, automated citation tracking, and double-blind peer grading.",
+    "stack": [
+      "React",
+      "Vite",
+      "FastAPI",
+      "PostgreSQL",
+      "Tailwind CSS"
+    ],
+    "liveUrl": "https://demo.example.com/research-hub",
+    "repoUrl": "https://github.com/adityasystems99/psystems",
+    "image": "/images/project-4.png"
+  }
+]

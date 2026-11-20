@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vertical Spiral Chain — Interactive 3D Scroll</title>
+  <style>
+    /* Reset & Base Setup */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      overflow-x: clip;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      background-color: #03040A;
+      color: #E2E8F0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* 800vh Cinematic Tall Scroll Container for Silky, Deliberate Pacing */
+    .scroll-container {
+      position: relative;
+      width: 100%;
+      height: 800vh;
+    }
+
+    /* Full-screen Sticky Stage */
+    .sticky-stage {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: #03040A;
+      background-image: radial-gradient(circle at 50% 50%, rgba(123, 92, 255, 0.14) 0%, rgba(3, 4, 10, 0) 70%);
+    }
+
+    /* Canvas 2D Element for Glowing Particles */
+    #stage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 640px;
+      height: 640px;
+      background: radial-gradient(circle, rgba(123, 92, 255, 0.09) 0%, rgba(0, 240, 255, 0.04) 40%, transparent 70%);
+      filter: blur(70px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Cards DOM Container */
+    .cards-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Project Card (240x140px, premium glass, legible typography, rich glow) */
+    .project-card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 240px;
+      height: 140px;
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(8, 14, 28, 0.88) 0%, rgba(20, 12, 35, 0.85) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(123, 92, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      will-change: transform, opacity;
+      transform-origin: center center;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .card-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #00F0FF;
+      background: rgba(0, 240, 255, 0.15);
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 240, 255, 0.35);
+    }
+
+    .card-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #FF2BD6;
+      box-shadow: 0 0 10px #FF2BD6;
+    }
+
+    .card-body {
+      margin-top: 4px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-desc {
+      font-size: 10px;
+      line-height: 1.45;
+      color: rgba(226, 232, 240, 0.82);
+      margin-top: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 8.5px;
+      color: rgba(123, 92, 255, 0.95);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 6px;
+    }
+
+    /* Fixed Top HUD (Brand Title & Progress Counter) */
+    .fixed-hud {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      width: 100%;
+      padding: 0 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00F0FF;
+      box-shadow: 0 0 12px #00F0FF;
+    }
+
+    .brand-text {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .progress-counter {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #00F0FF;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 6px 14px;
+      border-radius: 20px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    /* Fixed Scroll Hint at Bottom */
+    .scroll-hint {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.6);
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .scroll-arrow {
+      width: 14px;
+      height: 14px;
+      border-bottom: 2px solid rgba(0, 240, 255, 0.8);
+      border-right: 2px solid rgba(0, 240, 255, 0.8);
+      transform: rotate(45deg);
+      animation: pulseBounce 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseBounce {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(45deg);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: translateY(6px) rotate(45deg);
+        opacity: 1;
+      }
+    }
+
+    /* Lower Captions (Fade in/out over 0.40–0.56 and 0.66–1.00) */
+    .caption-layer {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 580px;
+      text-align: center;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    .caption.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .caption-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #FF2BD6;
+      text-shadow: 0 0 16px rgba(255, 43, 214, 0.7);
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+
+    .caption-title {
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 0 0 24px rgba(123, 92, 255, 0.5);
+      line-height: 1.2;
+    }
+
+    .caption-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: rgba(226, 232, 240, 0.88);
+      margin-top: 6px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.98);
+    }
+
+    /* Canvas 2D Fallback */
+    .no-canvas #stage {
+      display: none;
+    }
+
+    .no-canvas .cards-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 80px 20px;
+      background: linear-gradient(180deg, #00F0FF 0%, #7B5CFF 50%, #FF2BD6 100%);
+    }
+
+    .no-canvas .project-card {
+      position: relative !important;
+      transform: none !important;
+      opacity: 1 !important;
+    }
+
+    /* Luminous Professor Hero (matching reference image) */
+    .professor-hero {
+      position: absolute;
+      top: 14%;
+      left: 50%;
+      transform: translate(-50%, 0);
+      width: 92%;
+      max-width: 960px;
+      text-align: center;
+      z-index: 10;
+      pointer-events: auto;
+      transition: opacity 0.3s ease-out;
+    }
+
+    .hero-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(212, 165, 116, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      margin-bottom: 14px;
+      box-shadow: 0 0 16px rgba(212, 165, 116, 0.18);
+    }
+
+    .hero-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #7B5CFF;
+      box-shadow: 0 0 8px #7B5CFF;
+    }
+
+    .hero-badge-text {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #E5A962;
+      font-weight: 600;
+    }
+
+    .professor-title {
+      font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+      font-size: clamp(28px, 5vw, 62px);
+      font-weight: 400;
+      color: #FFFFFF;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      text-shadow: 0 0 35px rgba(255, 255, 255, 0.5), 0 0 75px rgba(123, 92, 255, 0.4), 0 0 120px rgba(0, 240, 255, 0.25);
+    }
+
+    .professor-subtitle {
+      margin-top: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: clamp(11px, 1.4vw, 14px);
+      line-height: 1.5;
+      color: #D8A76B;
+      letter-spacing: 0.02em;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+      opacity: 0.95;
+    }
+
+    .terminal-prompt {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      color: #E5A962;
+    }
+
+    .prompt-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: #E5A962;
+      animation: promptBlink 1s infinite;
+    }
+
+    @keyframes promptBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .hero-pills-row {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .hero-action-pill {
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      color: #CBD5E1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      text-decoration: none;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+
+    .hero-action-pill:hover {
+      border-color: rgba(0, 240, 255, 0.6);
+      color: #FFFFFF;
+      background: rgba(0, 240, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+
+    /* Mobile Responsive (< 720px) */
+    @media (max-width: 720px) {
+      .fixed-hud {
+        padding: 0 16px;
+        top: 18px;
+      }
+
+      .brand-text {
+        font-size: 11px;
+      }
+
+      .progress-counter {
+        font-size: 11px;
+        padding: 4px 10px;
+      }
+
+      .project-card {
+        width: 185px;
+        height: 110px;
+        padding: 10px 12px;
+      }
+
+      .card-title {
+        font-size: 11px;
+      }
+
+      .card-desc {
+        font-size: 8.5px;
+        line-height: 1.35;
+      }
+
+      .caption-layer {
+        bottom: 5%;
+        padding: 0 12px;
+      }
+
+      .caption-title {
+        font-size: 17px;
+      }
+
+      .caption-desc {
+        font-size: 11px;
+        line-height: 1.4;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scroll-container" id="scrollContainer">
+    <div class="sticky-stage" id="stageContainer">
+      <!-- Ambient Radial Glow -->
+      <div class="ambient-glow"></div>
+
+      <!-- Canvas 2D for particle helix and dust -->
+      <canvas id="stage"></canvas>
+
+      <!-- Project Cards Layer -->
+      <div class="cards-container" id="cardsContainer">
+        <!-- 6 Cards -->
+        <article class="project-card" id="card-0" aria-hidden="true">
+          <div class="card-header">
+            <span class="card-tag">Project // 01</span>
+            <div class="card-indicator"></div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Distributed Stream Core</h3>
+            <p class="card-desc">Zero-copy event pipeline processing 2.4M msgs/sec with deterministic latency.</p>
+          </div>
+          <div class="card-footer">
+            <span>STRAND A</span>
+            <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">SYSTEMS ↗</a>
+          </div>
+        </article>
+
+        <article class="project-card" id="card-1" aria-hidden="true">
+          <div class="card-header">
+            <span class="card-tag">Project // 02</span>
+            <div class="card-indicator"></div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Microkernel Hypervisor</h3>
+            <p class="card-desc">Hardware-isolated sandbox with sub-microsecond IPC and memory virtualization.</p>
+          </div>
+          <div class="card-footer">
+            <span>STRAND B</span>
+            <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">OS INTERNALS ↗</a>
+          </div>
+        </article>
+
+        <article class="project-card" id="card-2" aria-hidden="true">
+          <div class="card-header">
+            <span class="card-tag">Project // 03</span>
+            <div class="card-indicator"></div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Tensor Mesh Visualizer</h3>
+            <p class="card-desc">Real-time WebGL manifold mapping with GPU compute kernel acceleration.</p>
+          </div>
+          <div class="card-footer">
+            <span>STRAND A</span>
+            <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">GRAPHICS ↗</a>
+          </div>
+        </article>
+
+        <article class="project-card" id="card-3" aria-hidden="true">
+          <div class="card-header">
+            <span class="card-tag">Project // 04</span>
+            <div class="card-indicator"></div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Byzantine Consensus</h3>
+            <p class="card-desc">Fault-tolerant distributed state machine replication over partitioned WAN.</p>
+          </div>
+          <div class="card-footer">
+            <span>STRAND B</span>
+            <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">NETWORKS ↗</a>
+          </div>
+        </article>
+
+        <article class="project-card" id="card-4" aria-hidden="true">
+          <div class="card-header">
+            <span class="card-tag">Project // 05</span>
+            <div class="card-indicator"></div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">SSA Vector Compiler</h3>
+            <p class="card-desc">Intermediate representation optimizing pass for AVX-512 SIMD pipelines.</p>
+          </div>
+          <div class="card-footer">
+            <span>STRAND A</span>
+            <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">COMPILERS ↗</a>
+          </div>
+        </article>
+
+        <article class="project-card" id="card-5" aria-hidden="true">
+          <div class="card-header">
+            <span class="card-tag">Project // 06</span>
+            <div class="card-indicator"></div>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">Lockless Ring Buffer</h3>
+            <p class="card-desc">Cache-line aligned memory sharing supporting RDMA remote direct access.</p>
+          </div>
+          <div class="card-footer">
+            <span>STRAND B</span>
+            <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">CONCURRENCY ↗</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- Luminous Professor Hero (matching reference image) -->
+      <div class="professor-hero" id="professorHero">
+        <div class="hero-badge-pill">
+          <span class="hero-badge-dot"></span>
+          <span class="hero-badge-text">3D RESEARCH PORTFOLIO · HARDWARE SECURITY</span>
+        </div>
+        <h1 class="professor-title">Professor Lalit Kumar Vashishtha</h1>
+        <p class="professor-subtitle">
+          Assistant Professor of Computer Science at KIIT · PhD candidate at BITS Pilani · Hardware security on RISC-V and formal methods
+        </p>
+        <div class="terminal-prompt">
+          <span>$</span>
+          <span class="prompt-cursor"></span>
+        </div>
+        <div class="hero-pills-row">
+          <a href="#projects" class="hero-action-pill">Google Scholar</a>
+          <a href="https://github.com/adityasystems99/psystems" target="_blank" rel="noopener noreferrer" class="hero-action-pill">GitHub</a>
+          <a href="https://linkedin.com" class="hero-action-pill">LinkedIn</a>
+          <a href="#about" class="hero-action-pill">Blog</a>
+          <a href="#about" class="hero-action-pill">Academic CV</a>
+          <a href="#contact" class="hero-action-pill">Contact</a>
+        </div>
+      </div>
+
+      <!-- Lower Captions (0.40–0.56 and 0.66–1.00) -->
+      <div class="caption-layer">
+        <div class="caption" id="caption-1">
+          <span class="caption-tag">RESEARCH // EXPLORATION</span>
+          <h2 class="caption-title">Distributed Systems & Resilient Cores</h2>
+          <p class="caption-desc">Investigating asynchronous concurrency protocols and low-latency transactional
+            architectures.</p>
+        </div>
+        <div class="caption" id="caption-2">
+          <span class="caption-tag">GRAPHICS // REAL-TIME</span>
+          <h2 class="caption-title">Accelerated Geometry & Visual Manifolds</h2>
+          <p class="caption-desc">Mathematical modeling of high-order structures rendered through direct hardware
+            pipelines.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Top HUD -->
+  <header class="fixed-hud">
+    <div class="brand-mark">
+      <div class="brand-dot"></div>
+      <span class="brand-text">Spiral Chain // Particle Helix</span>
+    </div>
+    <div class="progress-counter" id="progressCounter">P // 0.00</div>
+  </header>
+
+  <!-- Fixed Bottom Scroll Hint -->
+  <div class="scroll-hint" id="scrollHint">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Smoothstep helper
+      function smoothstep(min, max, value) {
+        const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+        return x * x * (3 - 2 * x);
+      }
+
+      function clamp(val, min, max) {
+        return Math.max(min, Math.min(max, val));
+      }
+
+      // Check Canvas 2D support
+      const canvas = document.getElementById("stage");
+      const ctx = canvas ? canvas.getContext("2d") : null;
+      if (!ctx) {
+        document.body.classList.add("no-canvas");
+        return;
+      }
+
+      // DOM Elements
+      const scrollContainer = document.getElementById("scrollContainer");
+      const professorHero = document.getElementById("professorHero");
+      const progressCounter = document.getElementById("progressCounter");
+      const scrollHint = document.getElementById("scrollHint");
+      const caption1 = document.getElementById("caption-1");
+      const caption2 = document.getElementById("caption-2");
+      const cardElements = [0, 1, 2, 3, 4, 5].map(i => document.getElementById("card-" + i));
+
+      // Viewport State
+      let stageWidth = window.innerWidth;
+      let stageHeight = window.innerHeight;
+      let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      // Scroll Progress State
+      let rawP = 0;
+      let shownP = 0;
+      let isForcedP = false;
+
+      // Deterministic QA query parameter (?p=0.38)
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryP = urlParams.get("p");
+      if (queryP !== null && !isNaN(parseFloat(queryP))) {
+        rawP = clamp(parseFloat(queryP), 0, 1);
+        shownP = rawP;
+        isForcedP = true;
+      }
+
+      // Check reduced motion
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // +1 = clockwise as seen from above. Use -1 to reverse.
+      const SPIN_DIR = 1;
+
+      // Particle System Parameters
+      const isMobile = () => window.innerWidth < 720;
+      const HELIX_TURNS = 3;
+      const HELIX_HEIGHT = 2.4;
+      let HELIX_RADIUS = isMobile() ? 0.44 : 0.6;
+      let CARD_RADIUS = isMobile() ? 0.80 : 1.9;
+
+      let particles = [];
+      let dustParticles = [];
+      let particlesMobile = null;
+
+      function initParticles() {
+        particles = [];
+        dustParticles = [];
+        const mobile = isMobile();
+        particlesMobile = mobile;
+        const helixCount = mobile ? 2600 : 4600;
+        const dustCount = mobile ? 400 : 700;
+        HELIX_RADIUS = mobile ? 0.44 : 0.6;
+        CARD_RADIUS = mobile ? 0.80 : 1.9;
+
+        // Helix Particles (Strand A: Cyan #00F0FF, Strand B: Magenta #FF2BD6)
+        for (let i = 0; i < helixCount; i++) {
+          const t = Math.random();
+          const strand = i % 2;
+          const angle = t * HELIX_TURNS * 2 * Math.PI + strand * Math.PI;
+          const jitterX = (Math.random() - 0.5) * 0.04;
+          const jitterY = (Math.random() - 0.5) * 0.04;
+          const jitterZ = (Math.random() - 0.5) * 0.04;
+
+          const x = HELIX_RADIUS * Math.cos(angle) + jitterX;
+          const y = -t * HELIX_HEIGHT + jitterY;
+          const z = HELIX_RADIUS * Math.sin(angle) + jitterZ;
+          const seed = Math.random() * 100;
+          const baseSize = mobile ? (Math.random() * 1.0 + 0.8) : (Math.random() * 1.5 + 1.0);
+
+          particles.push({
+            x, y, z, strand, seed, baseSize,
+            baseAlpha: Math.random() * 0.35 + 0.65
+          });
+        }
+
+        // Faint Violet Dust inside cylinder at 35% alpha
+        for (let i = 0; i < dustCount; i++) {
+          const t = Math.random();
+          const r = HELIX_RADIUS * Math.sqrt(Math.random()) * 0.9;
+          const theta = Math.random() * Math.PI * 2;
+          const x = r * Math.cos(theta);
+          const y = -t * HELIX_HEIGHT;
+          const z = r * Math.sin(theta);
+          const seed = Math.random() * 100;
+          const baseSize = mobile ? (Math.random() * 0.8 + 0.6) : (Math.random() * 1.2 + 0.8);
+
+          dustParticles.push({
+            x, y, z, seed, baseSize,
+            baseAlpha: 0.35
+          });
+        }
+      }
+
+      // Pre-rendered offscreen glowing sprites for cinema-grade additive blending performance
+      const spriteCyan = document.createElement("canvas");
+      const spriteMagenta = document.createElement("canvas");
+      const spriteViolet = document.createElement("canvas");
+      const SPRITE_SIZE = 32;
+
+      function createGlowSprite(canvasElem, colorCore, colorGlow) {
+        canvasElem.width = SPRITE_SIZE;
+        canvasElem.height = SPRITE_SIZE;
+        const sctx = canvasElem.getContext("2d");
+        const center = SPRITE_SIZE / 2;
+        const grad = sctx.createRadialGradient(center, center, 0, center, center, center);
+        grad.addColorStop(0, colorCore);
+        grad.addColorStop(0.35, colorGlow);
+        grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        sctx.fillStyle = grad;
+        sctx.fillRect(0, 0, SPRITE_SIZE, SPRITE_SIZE);
+      }
+
+      createGlowSprite(spriteCyan, "rgba(255, 255, 255, 1)", "rgba(0, 240, 255, 0.85)");
+      createGlowSprite(spriteMagenta, "rgba(255, 255, 255, 1)", "rgba(255, 43, 214, 0.85)");
+      createGlowSprite(spriteViolet, "rgba(255, 255, 255, 0.8)", "rgba(123, 92, 255, 0.65)");
+
+      // Resize Canvas with high-DPI scaling
+      function resize() {
+        stageWidth = window.innerWidth;
+        stageHeight = window.innerHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(stageWidth * dpr);
+        canvas.height = Math.floor(stageHeight * dpr);
+        canvas.style.width = stageWidth + "px";
+        canvas.style.height = stageHeight + "px";
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+
+        if (particlesMobile !== isMobile()) initParticles();
+      }
+
+      window.addEventListener("resize", resize, { passive: true });
+      resize();
+
+      // Scroll Event Listener
+      function onScroll() {
+        if (isForcedP) return;
+        const maxScroll = scrollContainer.scrollHeight - window.innerHeight;
+        if (maxScroll > 0) {
+          rawP = clamp(window.scrollY / maxScroll, 0, 1);
+        }
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+
+      // Visibility state
+      let isVisible = !document.hidden;
+      document.addEventListener("visibilitychange", () => {
+        isVisible = !document.hidden;
+      });
+
+      // Animation Loop
+      let startTime = performance.now();
+      let animFrameId = null;
+
+      function renderFrame(now) {
+        if (!isVisible) {
+          animFrameId = requestAnimationFrame(renderFrame);
+          return;
+        }
+
+        const elapsedSec = (now - startTime) * 0.001;
+
+        // Smooth progress: shown += (p - shown) * 0.045 (smooth deliberate pacing)
+        if (prefersReducedMotion) {
+          shownP = 1.0;
+        } else if (isForcedP) {
+          shownP = rawP;
+        } else {
+          shownP += (rawP - shownP) * 0.045;
+        }
+
+        // Update Progress Counter HUD
+        if (progressCounter) {
+          progressCounter.textContent = "P // " + shownP.toFixed(2);
+        }
+
+        // Smoothly dissolve hero title as user scrolls down the chain
+        if (professorHero) {
+          const heroOpacity = clamp(1 - shownP * 5.5, 0, 1);
+          const heroTranslateY = -shownP * 140;
+          professorHero.style.opacity = heroOpacity.toFixed(3);
+          professorHero.style.transform = `translate(-50%, ${heroTranslateY.toFixed(1)}px)`;
+          professorHero.style.pointerEvents = heroOpacity > 0.05 ? "auto" : "none";
+        }
+
+        // Hide scroll hint once user scrolls past 0.08
+        if (scrollHint) {
+          const isScrolledPast = shownP > 0.08;
+          scrollHint.style.display = isScrolledPast ? "none" : "flex";
+        }
+
+        // Update Captions (0.40–0.56 and 0.66–1.00)
+        if (caption1) {
+          const inRange1 = shownP >= 0.40 && shownP <= 0.56;
+          caption1.classList.toggle("active", inRange1);
+        }
+        if (caption2) {
+          const inRange2 = shownP >= 0.66 && shownP <= 1.00;
+          caption2.classList.toggle("active", inRange2);
+        }
+
+        // Clear Canvas
+        ctx.clearRect(0, 0, stageWidth, stageHeight);
+        ctx.globalCompositeOperation = "lighter";
+
+        // CAMERA AND ROTATION
+        // Descent: camY moves down the chain.
+        // At p=0.02, camY = -0.4 (top of chain)
+        // At p=0.38, chain is mid-descent
+        // At p=0.97, camY centers the full spiral with all 6 cards visible (Pitfall 2 fix)
+        const d = smoothstep(0.18, 0.95, shownP);
+        const camY = -0.35 - d * 0.95;
+
+        // Spin: A = d * 2.2 * PI + time * 0.04 (graceful rotation speed)
+        const timeOffset = prefersReducedMotion ? 0 : elapsedSec * 0.04;
+        const A = SPIN_DIR * (d * 2.2 * Math.PI + timeOffset);
+
+        const cosA = Math.cos(A);
+        const sinA = Math.sin(A);
+
+        // PROJECTION
+        // unit = min(stageWidth, stageHeight) * 0.3
+        const unit = Math.min(stageWidth, stageHeight) * 0.3;
+        const halfW = stageWidth * 0.5;
+        const halfH = stageHeight * 0.5;
+
+        function project(x, y, z) {
+          const xr = x * cosA + z * sinA;
+          const zr = -x * sinA + z * cosA;
+          const yr = y - camY;
+
+          // persp = 1 / (1 + clamp(zr, -0.6, 0.6) * 0.9). Clamp is required.
+          const clampedZ = clamp(zr, -0.6, 0.6);
+          const persp = 1 / (1 + clampedZ * 0.9);
+
+          const sx = halfW + xr * unit * persp;
+          const sy = halfH + yr * unit * persp;
+          return { xr, yr, zr, persp, sx, sy };
+        }
+
+        // Draw Helix Particles
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          const proj = project(p.x, p.y, p.z);
+
+          if (proj.sx < -10 || proj.sx > stageWidth + 10 || proj.sy < -10 || proj.sy > stageHeight + 10) {
+            continue;
+          }
+
+          const shimmer = prefersReducedMotion ? 1.0 : (0.85 + 0.15 * Math.sin(elapsedSec * 1.3 + p.seed));
+          const alpha = clamp(p.baseAlpha * shimmer, 0.05, 1.0);
+
+          const sprite = (p.strand === 0) ? spriteCyan : spriteMagenta;
+          const pSize = Math.max(3, p.baseSize * proj.persp * 5);
+
+          ctx.globalAlpha = alpha;
+          ctx.drawImage(sprite, proj.sx - pSize * 0.5, proj.sy - pSize * 0.5, pSize, pSize);
+        }
+
+        // Draw Dust Particles (inside cylinder at 35% alpha)
+        for (let i = 0; i < dustParticles.length; i++) {
+          const p = dustParticles[i];
+          const proj = project(p.x, p.y, p.z);
+
+          if (proj.sx < -10 || proj.sx > stageWidth + 10 || proj.sy < -10 || proj.sy > stageHeight + 10) {
+            continue;
+          }
+
+          const shimmer = prefersReducedMotion ? 1.0 : (0.85 + 0.15 * Math.sin(elapsedSec * 1.1 + p.seed));
+          const alpha = clamp(p.baseAlpha * shimmer, 0.05, 0.6);
+          const pSize = Math.max(2, p.baseSize * proj.persp * 4);
+
+          ctx.globalAlpha = alpha;
+          ctx.drawImage(spriteViolet, proj.sx - pSize * 0.5, proj.sy - pSize * 0.5, pSize, pSize);
+        }
+
+        ctx.globalAlpha = 1.0;
+
+        // PROJECT CARDS
+        // Fix Pitfall 1: Keep per-card angle offsets evenly spread (i/6 of a turn)
+        // Fix Pitfall 2: Place cards at heights matching visible band
+        const projectedCards = [];
+
+        for (let i = 0; i < 6; i++) {
+          const angle_i = (i / 6) * 2 * Math.PI;
+          const t_i = 0.18 + (i / 5) * 0.56;
+
+          const cx = CARD_RADIUS * Math.cos(angle_i);
+          const cy = -t_i * HELIX_HEIGHT;
+          const cz = CARD_RADIUS * Math.sin(angle_i);
+
+          const proj = project(cx, cy, cz);
+
+          // Staggered reveal progression:
+          // at p=0.02 none visible
+          // at p=0.38 first cards (0, 1, 2) are appearing in sequence
+          // at p=0.97 all 6 cards visible
+          let reveal = 0;
+          if (prefersReducedMotion) {
+            reveal = 1.0;
+          } else {
+            const start_i = 0.12 + i * 0.12;
+            const end_i = start_i + 0.10;
+            reveal = smoothstep(start_i, end_i, shownP);
+          }
+
+          projectedCards.push({
+            index: i,
+            proj: proj,
+            reveal: reveal,
+            adjustedSy: proj.sy
+          });
+        }
+
+        // KNOWN PITFALL 1 FIX: Nudge vertical position if two cards land within 40px
+        for (let i = 0; i < projectedCards.length; i++) {
+          for (let j = i + 1; j < projectedCards.length; j++) {
+            const cardA = projectedCards[i];
+            const cardB = projectedCards[j];
+            if (cardA.reveal > 0.05 && cardB.reveal > 0.05) {
+              const dx = Math.abs(cardA.proj.sx - cardB.proj.sx);
+              const dy = Math.abs(cardA.adjustedSy - cardB.adjustedSy);
+              if (dx < 60 && dy < 40) {
+                if (cardA.adjustedSy < cardB.adjustedSy) {
+                  cardA.adjustedSy -= 20;
+                  cardB.adjustedSy += 20;
+                } else {
+                  cardA.adjustedSy += 20;
+                  cardB.adjustedSy -= 20;
+                }
+              }
+            }
+          }
+        }
+
+        // Render Cards to DOM
+        const isMobileScreen = isMobile();
+        const halfCardW = isMobileScreen ? 92 : 120;
+        const halfCardH = isMobileScreen ? 55 : 70;
+
+        for (let i = 0; i < projectedCards.length; i++) {
+          const cardData = projectedCards[i];
+          const el = cardElements[i];
+          if (!el) continue;
+
+          const proj = cardData.proj;
+          const reveal = cardData.reveal;
+          const sy = cardData.adjustedSy;
+          let sx = proj.sx;
+
+          // Scale: s = clamp(persp * 0.95, 0.55, 1.15)
+          const s = clamp(proj.persp * 0.95, 0.55, 1.15);
+
+          // Keep within lateral screen bounds on mobile, taking visual scale into account
+          if (isMobileScreen) {
+            const visualHalfW = halfCardW * s;
+            sx = clamp(sx, 16 + visualHalfW, stageWidth - 16 - visualHalfW);
+          }
+
+          // Hide card (opacity 0) when projected y is more than 120px outside the screen
+          const isOffScreenY = (sy < -120 || sy > stageHeight + 120);
+
+          if (reveal <= 0.001 || isOffScreenY) {
+            el.style.opacity = "0";
+            el.style.pointerEvents = "none";
+            continue;
+          }
+
+          // Depth: cards with zr < 0 (toward the viewer) get z-index 3 and full opacity.
+          // Cards behind get z-index 1 and 60% opacity.
+          const isFront = proj.zr < 0;
+          const depthOpacity = isFront ? 1.0 : 0.6;
+          const zIndex = isFront ? 3 : 1;
+          const finalOpacity = reveal * depthOpacity;
+
+          // Rise 40px into place over reveal: (1 - reveal) * 40px
+          const riseY = (1 - reveal) * 40;
+          const translateX = sx - halfCardW;
+          const translateY = sy - halfCardH + riseY;
+
+          el.style.transform = `translate3d(${translateX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0px) scale(${s.toFixed(3)})`;
+          el.style.opacity = finalOpacity.toFixed(3);
+          el.style.zIndex = zIndex;
+        }
+
+        animFrameId = requestAnimationFrame(renderFrame);
+      }
+
+      animFrameId = requestAnimationFrame(renderFrame);
+    })();
+  </script>
+</body>
+
+</html>
