@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd professor-portfolio/frontend && npm install && npm run build",
+  "framework": "vite",
   "outputDirectory": "professor-portfolio/frontend/dist",
   "rewrites": [
     {

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "npm --prefix professor-portfolio/frontend install && npm --prefix professor-portfolio/frontend run build",
     "dev": "npm --prefix professor-portfolio/frontend run dev",
-    "build": "npm --prefix professor-portfolio/frontend run build",
     "preview": "npm --prefix professor-portfolio/frontend run preview"
   }
 }
