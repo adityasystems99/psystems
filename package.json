@@ -1,0 +1,10 @@
+{
+  "name": "psystems",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix professor-portfolio/frontend run dev",
+    "build": "npm --prefix professor-portfolio/frontend run build",
+    "preview": "npm --prefix professor-portfolio/frontend run preview"
+  }
+}
