@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix professor-portfolio/frontend install && npm --prefix professor-portfolio/frontend run build",
+    "build": "npm --prefix professor-portfolio/frontend install && npm --prefix professor-portfolio/frontend run build && node scripts/copy-dist.cjs",
     "dev": "npm --prefix professor-portfolio/frontend run dev",
     "preview": "npm --prefix professor-portfolio/frontend run preview"
   }
