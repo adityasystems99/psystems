@@ -7,6 +7,8 @@ node_modules/
 dist/
 build/
 */dist/
+*.tsbuildinfo
+*/*.tsbuildinfo
 
 # Python cache & venv
 __pycache__/
